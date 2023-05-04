@@ -1,0 +1,96 @@
+install.packages("rvest")
+library(rvest)
+
+
+url_21<-read_html('https://www.numbeo.com/quality-of-life/rankings_by_country.jsp?title=2021')
+url_20<-read_html('https://www.numbeo.com/quality-of-life/rankings_by_country.jsp?title=2020')
+url_19<-read_html('https://www.numbeo.com/quality-of-life/rankings_by_country.jsp?title=2019')
+url_18<-read_html('https://www.numbeo.com/quality-of-life/rankings_by_country.jsp?title=2018')
+url_17<-read_html('https://www.numbeo.com/quality-of-life/rankings_by_country.jsp?title=2017')
+url_16<-read_html('https://www.numbeo.com/quality-of-life/rankings_by_country.jsp?title=2016')
+url_15<-read_html('https://www.numbeo.com/quality-of-life/rankings_by_country.jsp?title=2015')
+url_14<-read_html('https://www.numbeo.com/quality-of-life/rankings_by_country.jsp?title=2014')
+
+
+nodes_21<-html_nodes(url_21, 'table')
+nodes_20<-html_nodes(url_20, 'table')
+nodes_19<-html_nodes(url_19, 'table')
+nodes_18<-html_nodes(url_18, 'table')
+nodes_17<-html_nodes(url_17, 'table')
+nodes_16<-html_nodes(url_16, 'table')
+nodes_15<-html_nodes(url_15, 'table')
+nodes_14<-html_nodes(url_14, 'table')
+
+
+df_21<-html_table(nodes_21[[2]])%>%as.data.frame()
+df_20<-html_table(nodes_20[[2]])%>%as.data.frame()
+df_19<-html_table(nodes_19[[2]])%>%as.data.frame()
+df_18<-html_table(nodes_18[[2]])%>%as.data.frame()
+df_17<-html_table(nodes_17[[2]])%>%as.data.frame()
+df_16<-html_table(nodes_16[[2]])%>%as.data.frame()
+df_15<-html_table(nodes_15[[2]])%>%as.data.frame()
+df_14<-html_table(nodes_14[[2]])%>%as.data.frame()
+
+rownames(df_21)<-df_21[, 2]
+rownames(df_20)<-df_20[, 2]
+rownames(df_19)<-df_19[, 2]
+rownames(df_18)<-df_18[, 2]
+rownames(df_17)<-df_17[, 2]
+rownames(df_16)<-df_16[, 2]
+rownames(df_15)<-df_15[, 2]
+rownames(df_14)<-df_14[, 2]
+
+
+df_21<-df_21[, 3:11]
+df_20<-df_20[, 3:11]
+df_19<-df_19[, 3:11]
+df_18<-df_18[, 3:11]
+df_17<-df_17[, 3:11]
+df_16<-df_16[, 3:11]
+df_15<-df_15[, 3:11]
+df_14<-df_14[, 3:11]
+
+
+plot_evaluation <- function(country, evaluation_of, colormap) {
+  eval_data <- as.data.frame(
+    rbind(
+      df_14[country, evaluation_of],
+      df_15[country, evaluation_of],
+      df_16[country, evaluation_of],
+      df_17[country, evaluation_of],
+      df_18[country, evaluation_of],
+      df_19[country, evaluation_of],
+      df_20[country, evaluation_of],
+      df_21[country, evaluation_of]
+    ),
+    row.names<-2014:2021
+  )
+  colnames(eval_data) <- country
+  
+  mn <- min(eval_data, na.rm = TRUE)
+  mx <- max(eval_data, na.rm = TRUE)
+  
+  plot(2014:2021, eval_data$'Chile', xlab = 'Года', ylab = paste("Индекс", evaluation_of), ylim = c(mn - 13, mx + 13),
+       main = paste("Оценка индекса", evaluation_of), col = colormap[1], type = 'b', lty = 1, pch = 1, lwd = 2)
+  
+  for (i in 2:length(country)) {
+    lines(2014:2021, eval_data[, i], type = 'b', col = colormap[i], lty = 1, pch = 1, lwd = 2)
+  }
+  
+  legend('bottomright', cex = 0.7, country, fill = colormap)
+}
+
+country<-c('Chile', 'Argentina', 'Bulgaria', 'Hungary', 'Latvia')
+color_map <- c('red', 'orange', 'yellow', 'green', 'blue')
+
+plot_evaluation(country, "Quality of Life Index", color_map)
+plot_evaluation(country, "Purchasing Power Index", color_map)
+plot_evaluation(country, "Safety Index", color_map)
+plot_evaluation(country, "Health Care Index", color_map)
+plot_evaluation(country, "Cost of Living Index", color_map)
+plot_evaluation(country, "Property Price to Income Ratio", color_map)
+plot_evaluation(country, "Traffic Commute Time Index", color_map)
+plot_evaluation(country, "Pollution Index", color_map)
+#plot_evaluation(country, "Climate Index", color_map)
+
+
